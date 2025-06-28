@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tonnetz Graph - Chromatic Note Network</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #4CAF50;
+        }
+        
+        #canvas {
+            border: 2px solid #333;
+            background-color: #2a2a2a;
+            cursor: pointer;
+        }
+        
+        .info {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tonnetz Graph</h1>
+        <canvas id="canvas" width="800" height="600"></canvas>
+        <div class="info">
+            <p>Interactive chromatic note network</p>
+            <p>Right: +7 semitones | Top-Right: +3 semitones | Bottom-Right: +4 semitones</p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
