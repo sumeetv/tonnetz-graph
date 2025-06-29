@@ -8,18 +8,18 @@ class TonnetzGraph {
         // Chromatic notes
         this.notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
         this.noteColors = {
-            'C': '#FF6B6B',   // Red
-            'C#': '#FF8E8E',  // Light Red
-            'D': '#4ECDC4',   // Teal
-            'D#': '#6ED4CD',  // Light Teal
-            'E': '#45B7D1',   // Blue
-            'F': '#96CEB4',   // Green
-            'F#': '#B8E6B8',  // Light Green
-            'G': '#FFEAA7',   // Yellow
-            'G#': '#FFE5A7',  // Light Yellow
-            'A': '#DDA0DD',   // Plum
-            'A#': '#E6B8E6',  // Light Plum
-            'B': '#F8BBD9'    // Pink
+            'C': '#CC9999',   // Muted Red
+            'C#': '#D4AAAA',  // Muted Light Red
+            'D': '#99CCCC',   // Muted Teal
+            'D#': '#AAD4D4',  // Muted Light Teal
+            'E': '#99BBDD',   // Muted Blue
+            'F': '#AACCBB',   // Muted Green
+            'F#': '#BBDDBB',  // Muted Light Green
+            'G': '#DDCC99',   // Muted Yellow
+            'G#': '#DDCC99',  // Muted Light Yellow
+            'A': '#CCAACC',   // Muted Plum
+            'A#': '#DDBBDD',  // Muted Light Plum
+            'B': '#DDAABB'    // Muted Pink
         };
         
         this.nodeRadius = 25;
@@ -216,26 +216,26 @@ class TonnetzGraph {
             this.ctx.moveTo(fromNode.x, fromNode.y);
             this.ctx.lineTo(toNode.x, toNode.y);
             
-            // Different colors for different edge types
+            // Different colors for different edge types - muted
             switch (edge.type) {
                 case 'right':
-                    this.ctx.strokeStyle = '#4CAF50'; // Green for +7
+                    this.ctx.strokeStyle = '#88AA88'; // Muted Green for +7
                     this.ctx.lineWidth = 2;
                     break;
                 case 'top-right':
-                    this.ctx.strokeStyle = '#2196F3'; // Blue for +3
+                    this.ctx.strokeStyle = '#7799BB'; // Muted Blue for +3
                     this.ctx.lineWidth = 1.5;
                     break;
                 case 'bottom-right':
-                    this.ctx.strokeStyle = '#FF9800'; // Orange for +4
+                    this.ctx.strokeStyle = '#CC9977'; // Muted Orange for +4
                     this.ctx.lineWidth = 1.5;
                     break;
                 case 'top-left':
-                    this.ctx.strokeStyle = '#9C27B0'; // Purple for top-left
+                    this.ctx.strokeStyle = '#9977AA'; // Muted Purple for top-left
                     this.ctx.lineWidth = 1.2;
                     break;
                 case 'bottom-left':
-                    this.ctx.strokeStyle = '#E91E63'; // Pink for bottom-left
+                    this.ctx.strokeStyle = '#BB7799'; // Muted Pink for bottom-left
                     this.ctx.lineWidth = 1.2;
                     break;
             }
@@ -253,19 +253,29 @@ class TonnetzGraph {
             this.ctx.beginPath();
             this.ctx.arc(node.x, node.y, this.nodeRadius, 0, 2 * Math.PI);
             
-            // Fill with note color
-            this.ctx.fillStyle = this.noteColors[node.note];
+            // Fill with note color - brighter for selected
+            if (isSelected) {
+                // Use bright, saturated color for selected nodes
+                const brightColors = {
+                    'C': '#FF4444',   'C#': '#FF6666',  'D': '#00DDDD',   'D#': '#44EEEE',
+                    'E': '#0099FF',   'F': '#00CC88',   'F#': '#44DD88',  'G': '#FFCC00',
+                    'G#': '#FFDD00', 'A': '#CC66CC',   'A#': '#DD88DD',  'B': '#FF6699'
+                };
+                this.ctx.fillStyle = brightColors[node.note];
+            } else {
+                this.ctx.fillStyle = this.noteColors[node.note];
+            }
             this.ctx.fill();
             
             // Border - selected takes priority over hovered
             if (isSelected) {
-                this.ctx.strokeStyle = '#FFD700';
-                this.ctx.lineWidth = 4;
+                this.ctx.strokeStyle = '#FFFF00';
+                this.ctx.lineWidth = 5;
             } else if (isHovered) {
                 this.ctx.strokeStyle = '#FFFFFF';
                 this.ctx.lineWidth = 3;
             } else {
-                this.ctx.strokeStyle = '#333333';
+                this.ctx.strokeStyle = '#555555';
                 this.ctx.lineWidth = 1;
             }
             this.ctx.stroke();
