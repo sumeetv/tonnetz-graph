@@ -25,6 +25,7 @@ class TonnetzGraph {
         this.nodeRadius = 25;
         this.gridSpacing = 80;
         this.hoveredNode = null;
+        this.selectedNodes = new Set();
         
         this.init();
     }
@@ -180,6 +181,15 @@ class TonnetzGraph {
             if (this.hoveredNode) {
                 const node = this.nodes.get(this.hoveredNode);
                 console.log(`Clicked node: ${node.note} (${node.semitone} semitones)`);
+                
+                // Toggle selection in set
+                if (this.selectedNodes.has(this.hoveredNode)) {
+                    this.selectedNodes.delete(this.hoveredNode);
+                } else {
+                    this.selectedNodes.add(this.hoveredNode);
+                }
+                
+                this.draw();
             }
         });
     }
@@ -192,6 +202,9 @@ class TonnetzGraph {
         
         // Draw nodes
         this.drawNodes();
+        
+        // Draw tooltips for connected groups
+        this.drawTooltips();
     }
     
     drawEdges() {
@@ -234,6 +247,7 @@ class TonnetzGraph {
     drawNodes() {
         this.nodes.forEach((node) => {
             const isHovered = node.id === this.hoveredNode;
+            const isSelected = this.selectedNodes.has(node.id);
             
             // Draw node circle
             this.ctx.beginPath();
@@ -243,9 +257,17 @@ class TonnetzGraph {
             this.ctx.fillStyle = this.noteColors[node.note];
             this.ctx.fill();
             
-            // Border
-            this.ctx.strokeStyle = isHovered ? '#FFFFFF' : '#333333';
-            this.ctx.lineWidth = isHovered ? 3 : 1;
+            // Border - selected takes priority over hovered
+            if (isSelected) {
+                this.ctx.strokeStyle = '#FFD700';
+                this.ctx.lineWidth = 4;
+            } else if (isHovered) {
+                this.ctx.strokeStyle = '#FFFFFF';
+                this.ctx.lineWidth = 3;
+            } else {
+                this.ctx.strokeStyle = '#333333';
+                this.ctx.lineWidth = 1;
+            }
             this.ctx.stroke();
             
             // Draw note name
@@ -260,6 +282,102 @@ class TonnetzGraph {
                 this.ctx.fillStyle = '#FFFFFF';
                 this.ctx.font = '10px Arial';
                 this.ctx.fillText(node.semitone.toString(), node.x, node.y + 15);
+            }
+        });
+    }
+    
+    // Find connected groups of selected nodes
+    getConnectedGroups() {
+        const visited = new Set();
+        const groups = [];
+        
+        for (const nodeId of this.selectedNodes) {
+            if (!visited.has(nodeId)) {
+                const group = [];
+                const stack = [nodeId];
+                
+                while (stack.length > 0) {
+                    const current = stack.pop();
+                    if (visited.has(current)) continue;
+                    
+                    visited.add(current);
+                    group.push(current);
+                    
+                    // Find connected selected nodes
+                    this.edges.forEach(edge => {
+                        if (edge.from === current && this.selectedNodes.has(edge.to) && !visited.has(edge.to)) {
+                            stack.push(edge.to);
+                        }
+                        if (edge.to === current && this.selectedNodes.has(edge.from) && !visited.has(edge.from)) {
+                            stack.push(edge.from);
+                        }
+                    });
+                }
+                
+                if (group.length > 0) {
+                    groups.push(group);
+                }
+            }
+        }
+        
+        return groups;
+    }
+    
+    // Find the top-right most node in a group
+    getTopRightMostNode(group) {
+        let topRightMost = null;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        
+        group.forEach(nodeId => {
+            const node = this.nodes.get(nodeId);
+            if (node.x > maxX || (node.x === maxX && node.y < minY)) {
+                maxX = node.x;
+                minY = node.y;
+                topRightMost = node;
+            }
+        });
+        
+        return topRightMost;
+    }
+    
+    // Draw tooltips for connected groups
+    drawTooltips() {
+        const groups = this.getConnectedGroups();
+        
+        groups.forEach(group => {
+            if (group.length > 1) {
+                const topRightNode = this.getTopRightMostNode(group);
+                if (topRightNode) {
+                    // Create tooltip text
+                    const notes = group.map(nodeId => this.nodes.get(nodeId).note).sort();
+                    const tooltipText = notes.join(', ');
+                    
+                    // Position tooltip above and to the right of the node
+                    const tooltipX = topRightNode.x + this.nodeRadius + 5;
+                    const tooltipY = topRightNode.y - this.nodeRadius - 5;
+                    
+                    // Measure text to create background
+                    this.ctx.font = '12px Arial';
+                    const textMetrics = this.ctx.measureText(tooltipText);
+                    const textWidth = textMetrics.width;
+                    const textHeight = 16;
+                    
+                    // Draw tooltip background
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    this.ctx.fillRect(tooltipX - 4, tooltipY - textHeight - 2, textWidth + 8, textHeight + 4);
+                    
+                    // Draw tooltip border
+                    this.ctx.strokeStyle = '#FFD700';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.strokeRect(tooltipX - 4, tooltipY - textHeight - 2, textWidth + 8, textHeight + 4);
+                    
+                    // Draw tooltip text
+                    this.ctx.fillStyle = '#FFFFFF';
+                    this.ctx.textAlign = 'left';
+                    this.ctx.textBaseline = 'top';
+                    this.ctx.fillText(tooltipText, tooltipX, tooltipY - textHeight);
+                }
             }
         });
     }
