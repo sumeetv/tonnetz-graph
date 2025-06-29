@@ -49,8 +49,8 @@ class TonnetzGraph {
     createTriangularGrid() {
         const centerX = this.canvas.width / 2;
         const centerY = this.canvas.height / 2;
-        const rows = 6;
-        const cols = 8;
+        const rows = 14;
+        const cols = 25;
         
         // Start with C (0 semitones) at center-left
         let startSemitone = 0;
