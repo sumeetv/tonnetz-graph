@@ -2,6 +2,8 @@
 
 Interactive visualization of chromatic notes in a musical lattice structure.
 
+Modernization decisions, the implementation roadmap, known findings, and resume instructions are saved in [MODERNIZATION_PLAN.md](MODERNIZATION_PLAN.md). App implementation is queued behind Chord Finder's mobile refresh.
+
 ## Usage
 
 1. Open `index.html` in a web browser
