@@ -65,7 +65,7 @@ Three.js direction: orthographic shallow lattice with slightly raised note discs
 
 ## Resume checkpoint
 
-- Plan saved; no Tonnetz app code changed. Chord Finder's first mobile foundation is implemented and validated; its Three.js effects remain a follow-up. See `../chord-finder/MODERNIZATION_PLAN.md` for the current checkpoint. Tonnetz implementation remains queued.
-- Repository was clean at initial inspection; no applicable AGENTS.md found in repository roots or ancestor directories.
+- Plan saved; no Tonnetz app code changed. Chord Finder's mobile foundation and on-demand Three.js feedback are implemented and validated; physical-phone evaluation remains pending. See `../chord-finder/MODERNIZATION_PLAN.md` for the current checkpoint. Tonnetz implementation remains queued.
+- Branch: `codex/music-app-modernization`. Initial roadmap committed as `f4450ab`; this sibling checkpoint is saved in a later documentation commit. No Tonnetz app code has changed. No applicable AGENTS.md found in repository roots or ancestor directories.
 - First action on resume: inspect `git status --short`, read this file, confirm Chord Finder's checkpoint, then begin topology validation when Tonnetz implementation is authorized.
 - Update checkboxes and this checkpoint with actual work/validation before ending a future implementation session.
