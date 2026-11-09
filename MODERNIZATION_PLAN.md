@@ -8,7 +8,7 @@ Last updated: 2026-11-08 (America/Los_Angeles).
 - Shared identity: dark, polished music tools with restrained neon accents. Tonnetz is the more expressive, spatial experience; Chord Finder is a focused guitar workbench.
 - UI and interaction refresh first; larger features and architecture changes are optional.
 - Personal use on both mobile and desktop. Support touch navigation and selection.
-- User authorized committing the saved plan on a new branch. App implementation remains queued while Chord Finder's tactile-effects milestone proceeds. No deployment requested.
+- User authorized implementing Tonnetz's core refresh after Chord Finder, on the existing `codex/music-app-modernization` branch. Proceed through correctness, responsive input, and Three.js milestones; keep optional enhancements separate. No deployment requested.
 
 ## Design direction
 
@@ -22,21 +22,22 @@ Three.js direction: orthographic shallow lattice with slightly raised note discs
 
 ### 1. Correctness and responsive foundation
 
-- [ ] Reconcile lattice coordinates, interval directions, generated edges, and displayed legend before animating geometry.
-- [ ] Add tests for adjacent intervals, valid triads, connected groups, repeated pitch classes, and chord interpretations.
-- [ ] Replace fixed 800×600 presentation with a responsive workspace and correct device-pixel-ratio handling.
-- [ ] Add direct pointer hit testing; distinguish tap from drag, support touch, and provide clear/undo/recenter.
-- [ ] Implement pan/zoom and a readable DOM selection inspector; desktop sidebar, mobile bottom sheet.
-- [ ] Establish shared dark tokens, clear focus, interval legend, and reduced-motion support.
+- [x] Reconcile lattice coordinates, interval directions, generated edges, and displayed legend before animating geometry.
+- [x] Add tests for adjacent intervals, valid triads, connected groups, repeated pitch classes, and chord interpretations.
+- [x] Replace fixed 800×600 presentation with a responsive workspace and correct device-pixel-ratio handling.
+- [x] Add direct pointer hit testing; distinguish tap from drag, support touch, and provide clear/undo/recenter.
+- [x] Implement pan/zoom and a readable DOM selection inspector; desktop sidebar, mobile bottom sheet.
+- [x] Establish shared dark tokens, clear focus, interval legend, and reduced-motion support.
 
 ### 2. Three.js renderer and expressive motion
 
-- [ ] Introduce a lightweight build setup; separate lattice generation, music matching, state, input, and rendering. Retain standalone app scope; React migration is optional.
-- [ ] Render repeated note discs with shared/instanced geometry and a bounded visible lattice.
-- [ ] Add selection halos, connecting-edge pulses, valid triad faces, and short camera settling.
-- [ ] Keep labels readable; support keyboard selection and DOM selection details.
-- [ ] Render on demand, pause when settled/hidden, cap rendering resolution, honor reduced motion, and provide a usable fallback if WebGL is unavailable.
-- [ ] Verify phone/desktop interaction and measure animation performance before claiming a frame-rate target.
+- [x] Introduce a lightweight build setup; separate lattice generation, music matching, state, input, and rendering. Retain standalone app scope; React migration is optional.
+- [x] Render repeated note discs with shared/instanced geometry and a bounded visible lattice.
+- [x] Add selection halos, connecting-edge pulses, valid triad faces, and short camera settling.
+- [x] Keep labels readable; support keyboard selection and DOM selection details.
+- [x] Render on demand, pause when settled/hidden, cap rendering resolution, honor reduced motion, and provide a usable fallback if WebGL is unavailable.
+- [x] Verify responsive phone/desktop layouts and core interactions in the browser.
+- [ ] Complete a physical-phone pass: touch/pinch comfort, system reduced motion, WebGL context-loss recovery, and sustained animation profiling. No frame-rate target is claimed.
 
 ### 3. Optional enhancements — separate scope
 
@@ -58,14 +59,36 @@ Three.js direction: orthographic shallow lattice with slightly raised note discs
 
 ## Validation
 
-- Current app runs by opening `index.html` or serving this directory with a local static server.
+- Current app runs with `npm ci` and `npm run dev`. Production output is `dist/` from `npm run build`; use `npm run preview` to inspect it. Direct file opening is no longer supported.
 - Before introducing a renderer, test topology and matching independent of browser/rendering code.
 - After implementation: phone portrait/landscape and desktop; pinch/pan versus tap; zoom/recenter; selections at viewport edges; multiple connected groups; keyboard/focus; reduced motion; settled rendering; WebGL fallback.
 - Sources for implementation principles: https://r3f.docs.pmnd.rs/advanced/scaling-performance and https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html (the app may use direct Three.js).
 
+## Implementation and verification — 2026-11-08
+
+- Replaced the monolithic canvas script with Vite and vanilla ES modules. Dependencies are pinned: Three.js 0.187.0 and Vite 8.3.6. Production asset URLs are relative for subdirectory hosting.
+- The hex-bounded axial lattice contains 331 physical positions. Coordinates, edge intervals, reciprocal adjacency, and major/minor triangles share one definition. Matching returns every exact interpretation; repeated pitches remain independent selections. Corrected the altered-ninth and thirteenth pitch-class patterns.
+- Implemented the dark responsive workspace, interval legend, desktop inspector/mobile expandable sheet, removable pitch chips, connected groups, clear/50-step undo, direct hit testing, pan/pinch/wheel zoom, recenter, Flat/Depth, and an initial C-major example.
+- Three.js uses instanced discs, borders, and selection halos; selected relationships illuminate and complete triads reveal faces. Camera transitions last 240 ms; selection motion settles within 650 ms. DOM labels stay in the shared projection. Rendering is on demand, DPR capped at 1.5, and visibility/offscreen state suspends frames.
+- Motion follows the system reduced-motion query and an optional persisted local preference. DOM note buttons expose names and pressed state, use one roving Tab stop, and support arrow/diagonal navigation, Home, Enter/Space, and Escape. Inspector changes have a live summary. Removing a pitch restores useful focus.
+- Canvas draws the initial map and retains all controls if the GPU backend cannot initialize. Context loss switches to the same fallback; cleanup releases GPU resources, observers, pointer state, and scheduled frames. `/?renderer=canvas` skips the GPU import for troubleshooting.
+- Fixed a browser-specific native-focus scrolling issue discovered during mobile QA: the map uses `overflow: clip`, pointer focus is applied with `preventScroll`, and pan remains owned by the view model. Repeated note taps were rechecked against the DOM projection afterward.
+
+Validation completed:
+
+- `npm test`: **15 passing tests** covering all lattice edges and triangles, exact/ambiguous chord interpretations, duplicate pitches, connected groups, immutable selection/undo, bounded history, projection/inverse, anchor-preserving zoom, clamped view, direct hit testing, tap/drag/pinch/cancel, and coalesced/suspended/disposed rendering.
+- `npm run build`: passed. Initial app JS is approximately 17.8 kB (7.4 kB gzip), with Three.js in a separate approximately 542 kB (135 kB gzip) chunk. Vite emits its default >500 kB chunk advisory for that lazy GPU backend; do not interpret lazy loading as eliminating the download.
+- Browser checks at 390×844, 320×568, 844×390, and 1440×1000: no horizontal page overflow; mobile sheet and desktop sidebar; direct C–G–E taps/keyboard entry; valid C-major face/interpretation; neighboring-key focus; Escape/Undo; note removal and focus recovery; desktop drag without toggling selection; zoom/recenter; Depth view; motion off and persisted through navigation; final renderer state settles to idle.
+- Explicit Canvas mode verified in the browser: same chord/face result, note removal/Undo, Depth, one canvas, motion preference retained. WebGL mode verified with no warning/error console output during the checked interactions.
+- Production preview verified at 390×844: repeated C–G–E taps produce C major, Depth and the expanded inspector work, the map's native scroll offset remains zero, one note has a Tab stop, and the renderer settles to idle. No warning/error console output was observed.
+- Screenshots are outside the repository in the session artifact directory: `tonnetz-mobile.png`, `tonnetz-mobile-details.png`, `tonnetz-desktop.png`, `tonnetz-canvas-fallback.png`.
+
+Remaining verification (not represented as completed): actual multitouch hardware and sustained frame-time profiling; OS reduced-motion changes and real WebGL loss/restore on a physical device. The gesture math and render-scheduler suspension are unit tested; device testing is still needed. Optional audio, saved paths, scale overlays, transformations, and a shared music package remain outside the authorized core scope.
+
 ## Resume checkpoint
 
-- Plan saved; no Tonnetz app code changed. Chord Finder's mobile foundation and on-demand Three.js feedback are implemented and validated; physical-phone evaluation remains pending. See `../chord-finder/MODERNIZATION_PLAN.md` for the current checkpoint. Tonnetz implementation remains queued.
-- Branch: `codex/music-app-modernization`. Initial roadmap committed as `f4450ab`; this sibling checkpoint is saved in a later documentation commit. No Tonnetz app code has changed. No applicable AGENTS.md found in repository roots or ancestor directories.
-- First action on resume: inspect `git status --short`, read this file, confirm Chord Finder's checkpoint, then begin topology validation when Tonnetz implementation is authorized.
-- Update checkboxes and this checkpoint with actual work/validation before ending a future implementation session.
+- Core Tonnetz implementation is complete on `codex/music-app-modernization`. Read `git status --short` and the latest commit before making further changes. No deployment or push has been performed.
+- Run `npm ci`, `npm test`, `npm run build`, then `npm run dev` to resume. Open the printed local URL; add `?renderer=canvas` to inspect the fallback. Temporary verification servers from this session are stopped when work concludes.
+- Next authorized follow-up is verification or fixes to the core refresh. Optional feature work needs a separate scope decision. The remaining real-device checklist above should stay open until it is actually performed.
+- Chord Finder's core refresh is complete on its sibling branch; it was not modified during Tonnetz implementation. Physical-phone evaluation is pending there too.
+- No applicable AGENTS.md was found in the repository roots or ancestor directories.
